@@ -166,6 +166,15 @@ function resetScene(){img('kicker','kicker_ready');place('kicker',{...KICK0,r:0,
 function buildBoard(){['me','op'].forEach(k=>{$(k).innerHTML='';for(let i=0;i<5;i++){const d=document.createElement('div');d.className='dot';$(k).appendChild(d)}});$('meS').textContent=$('opS').textContent='0'}
 function mark(k,i,goal){const d=$(k).children[i];d.className='dot '+(goal?'g':'r')+' pop';const arr=G[k];arr[i]=goal;$(k+'S').textContent=arr.filter(Boolean).length}
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function subtype(cat,q){if(cat==='hangul')return q.opts[0].length===1?'cons':'word';if(cat==='math')return /\d \+ \d/.test(q.q)?'add':(q.q.includes('+')?'add':'count');return 'pic'}
+// 셔플 백: 아직 안 나온 문제를 먼저 뽑고(localStorage에 기록), 같은 유형·같은 정답이 연달아 나오지 않게 순서 조정
+function pickRound(cat){const all=QUESTIONS[cat],key='pq_seen_'+cat;let seen=[];try{seen=JSON.parse(localStorage.getItem(key)||'[]')}catch(e){}
+ let fresh=shuffle(all.map((_,i)=>i).filter(i=>!seen.includes(i)));if(fresh.length<5){seen=[];fresh=fresh.concat(shuffle(all.map((_,i)=>i).filter(i=>!fresh.includes(i))))}
+ const pool=fresh.slice(0,12),out=[];
+ while(out.length<5&&pool.length){const prev=out[out.length-1];let k=pool.findIndex(i=>prev===undefined||(subtype(cat,all[i])!==subtype(cat,all[prev])&&all[i].opts[all[i].a]!==all[prev].opts[all[prev].a]));
+  if(k<0)k=pool.findIndex(i=>all[i].opts[all[i].a]!==all[prev].opts[all[prev].a]);if(k<0)k=0;out.push(pool.splice(k,1)[0])}
+ seen=seen.concat(out);try{localStorage.setItem(key,JSON.stringify(seen))}catch(e){}
+ return out.map(i=>all[i])}
 function prepQ(q){// shuffle options too
  const idx=shuffle([0,1,2,3]);return {...q,opts:idx.map(i=>q.opts[i]),a:idx.indexOf(q.a)}}
 // zones
@@ -177,12 +186,12 @@ const opts=()=>[...document.querySelectorAll('.opt')],zones=()=>[...document.que
 function showOpts(on){opts().forEach((o,i)=>{o.classList.remove('ok','no');if(on){o.querySelector('.t').textContent=cur.opts[i];fitText(o.querySelector('.t'),cur.opts[i]);setTimeout(()=>o.classList.add('show'),i*90)}else o.classList.remove('show')});zones().forEach(z=>z.style.display=on?'block':'none')}
 function banner(t,c){const b=$('banner');b.textContent=t;b.style.color=c;b.classList.remove('show');void b.offsetWidth;b.classList.add('show')}
 
-async function startGame(){ac();G.shot=0;G.me=[];G.op=[];deck=shuffle(QUESTIONS[G.cat]);buildBoard();$('start').classList.add('hide');$('end').classList.add('hide');nextShot()}
+async function startGame(){ac();G.shot=0;G.me=[];G.op=[];deck=pickRound(G.cat);buildBoard();$('start').classList.add('hide');$('end').classList.add('hide');nextShot()}
 async function nextShot(){
  if(G.shot>=5)return endGame();
  resetScene();answered=false;G.phase='ready';[...$('me').children].forEach((d,i)=>d.classList.toggle('cur',i===G.shot));
  await sleep(900);whistle();G.phase='whistle';await sleep(1300);
- cur=prepQ(deck[G.shot%deck.length]);$('qtext').textContent=cur.q;$('bubble').classList.add('show');showOpts(true);G.phase='question';showListening();readThen(()=>{if(G.phase==='question'&&!answered)startTimer()})}
+ cur=prepQ(deck[G.shot]);$('qtext').textContent=cur.q;$('bubble').classList.add('show');showOpts(true);G.phase='question';showListening();readThen(()=>{if(G.phase==='question'&&!answered)startTimer()})}
 function showListening(){$('timer').style.display='block';$('timer').classList.remove('hurry');$('tnum').textContent=G.time;$('tfill').style.width='100%';$('tlisten').style.display='block';$('timer').classList.add('paused')}
 function startTimer(){$('tlisten').style.display='none';$('timer').classList.remove('paused');const T=G.time*1000,s=performance.now();$('timer').style.display='block';let last=G.time+1;
  clearInterval(timerId);timerId=setInterval(()=>{const left=Math.max(0,T-(performance.now()-s));const sec=Math.ceil(left/1000);$('tnum').textContent=sec;$('tfill').style.width=(left/T*100)+'%';$('timer').classList.toggle('hurry',sec<=3);if(sec!==last&&sec<=3&&sec>0)tick();last=sec;if(left<=0){clearInterval(timerId);timeout()}},50)}
