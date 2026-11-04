@@ -27,8 +27,10 @@ html,body{margin:0;height:100%;background:#1b5e20;overflow:hidden;font-family:"J
 /* zones */
 .zone{position:absolute;top:219px;height:310px;width:137px;z-index:12;cursor:pointer;display:none}
 .zone:hover{background:rgba(255,255,0,.12)}
-.opt{position:absolute;top:446px;width:121px;height:80px;margin-left:8px;box-sizing:border-box;padding:0 8px;overflow:hidden;white-space:nowrap;background:rgba(255,255,255,.2);border:3px solid rgba(255,255,255,.75);border-radius:16px;box-shadow:0 4px 0 rgba(0,50,0,.25);display:flex;align-items:center;justify-content:center;z-index:13;cursor:pointer;pointer-events:auto;font-size:80px;font-weight:900;color:#fff;-webkit-text-stroke:3px rgba(15,60,15,.6);text-shadow:0 4px 0 rgba(0,50,0,.5),0 0 14px rgba(0,0,0,.35);opacity:0;transform:perspective(420px) rotateX(32deg) scale(.6);transform-origin:50% 100%;transition:opacity .3s,transform .35s cubic-bezier(.3,1.6,.5,1)}
-.opt.show{opacity:1;transform:perspective(420px) rotateX(32deg) scale(1)}
+.opt{position:absolute;top:0;width:121px;height:100%;margin-left:8px;box-sizing:border-box;padding:0 8px;overflow:hidden;white-space:nowrap;background:rgba(255,255,255,.2);border:3px solid rgba(255,255,255,.75);border-radius:16px;box-shadow:0 4px 0 rgba(0,50,0,.25);display:flex;align-items:center;justify-content:center;z-index:13;cursor:pointer;pointer-events:auto;font-size:80px;font-weight:900;color:#fff;-webkit-text-stroke:3px rgba(15,60,15,.6);text-shadow:0 4px 0 rgba(0,50,0,.5),0 0 14px rgba(0,0,0,.35);opacity:0;transform:scale(.6);transform-origin:50% 100%;transition:opacity .3s,transform .35s cubic-bezier(.3,1.6,.5,1)}
+.opt.show{opacity:1;transform:scale(1)}
+#optPlane{position:absolute;left:371px;top:436px;width:548px;height:108px;perspective:520px;perspective-origin:50% -60%;z-index:13;pointer-events:none}
+#optInner{position:absolute;inset:0;transform:rotateX(42deg);transform-origin:50% 100%;transform-style:preserve-3d}
 .opt .n{position:absolute;top:4px;left:6px;font-size:22px;color:rgba(255,255,255,.7);-webkit-text-stroke:0;text-shadow:none}
 .opt.ok{color:#ffeb3b;-webkit-text-stroke:2px rgba(120,80,0,.7)}.opt.no{color:#ff8a80;opacity:.75}
 
@@ -70,7 +72,7 @@ html,body{margin:0;height:100%;background:#1b5e20;overflow:hidden;font-family:"J
  <img id="gkShadow" class="spr" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='20'><ellipse cx='50' cy='10' rx='50' ry='10' fill='black' opacity='.3'/></svg>">
  <img id="gk" class="spr" src="assets/gk_idle.png">
  <div id="bubble" class="abs"><span id="qtext"></span><span id="spk" onclick="if(G.phase==='question')speakQ()">🔊</span></div>
- <div id="zones"></div>
+ <div id="zones"></div><div id="optPlane"><div id="optInner"></div></div>
  <img id="ballShadow" class="spr" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='30'><ellipse cx='50' cy='15' rx='50' ry='15' fill='black' opacity='.35'/></svg>">
  <img id="kicker" class="spr" src="assets/kicker_ready.png">
  <img id="ball" class="spr" src="assets/ball.png">
@@ -158,7 +160,7 @@ function drawNet(){net.clearRect(0,0,W,H);if(!ripple)return;const age=(performan
 
 // ---------- game state ----------
 const G=window.G={cat:'hangul',time:10,shot:0,me:[],op:[],busy:false};let cur=null,deck=[],timerId=null,answered=false;
-const KICK0={x:300,y:712,h:262},BALL0={x:600,y:655,h:62},GK0={x:645,y:GOAL.line+4,h:165};
+const KICK0={x:245,y:712,h:262},BALL0={x:600,y:655,h:62},GK0={x:645,y:GOAL.line+4,h:165};
 function resetScene(){img('kicker','kicker_ready');place('kicker',{...KICK0,r:0,sx:1,sy:1,o:1});img('ball','ball');place('ball',{...BALL0,r:0,sx:1,sy:1,o:1});place('ballShadow',{x:BALL0.x,y:BALL0.y+10,h:20,sx:1,sy:1,o:1,r:0});
  img('gk','gk_idle');place('gk',{...GK0,r:0,sx:1,sy:1,o:1});place('gkShadow',{x:GK0.x,y:GK0.y+6,h:16,sx:1,sy:1,o:1,r:0});$('kbub').style.display='none'}
 function buildBoard(){['me','op'].forEach(k=>{$(k).innerHTML='';for(let i=0;i<5;i++){const d=document.createElement('div');d.className='dot';$(k).appendChild(d)}});$('meS').textContent=$('opS').textContent='0'}
@@ -168,7 +170,7 @@ function prepQ(q){// shuffle options too
  const idx=shuffle([0,1,2,3]);return {...q,opts:idx.map(i=>q.opts[i]),a:idx.indexOf(q.a)}}
 // zones
 for(let i=0;i<4;i++){const z=document.createElement('div');z.className='zone';z.style.left=(GOAL.x0+ZW*i)+'px';z.onclick=()=>choose(i);$('zones').appendChild(z);
- const o=document.createElement('div');o.className='opt';o.style.left=(GOAL.x0+ZW*i)+'px';o.innerHTML=`<span class="n">${i+1}</span><span class="t"></span>`;o.onclick=()=>choose(i);$('zones').appendChild(o)}
+ const o=document.createElement('div');o.className='opt';o.style.left=(ZW*i)+'px';o.innerHTML=`<span class="n">${i+1}</span><span class="t"></span>`;o.onclick=()=>choose(i);$('optInner').appendChild(o)}
 const _mc=document.createElement('canvas').getContext('2d');
 function fitText(el,t){const maxW=121-6-16-8;let f=80;const fam=getComputedStyle(el).fontFamily;do{_mc.font=`900 ${f}px ${fam}`;if(_mc.measureText(t).width+6<=maxW)break;f-=2}while(f>16);el.style.fontSize=f+'px'}
 const opts=()=>[...document.querySelectorAll('.opt')],zones=()=>[...document.querySelectorAll('.zone')];
