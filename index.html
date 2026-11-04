@@ -27,12 +27,12 @@ html,body{margin:0;height:100%;background:#1b5e20;overflow:hidden;font-family:"J
 /* zones */
 .zone{position:absolute;top:219px;height:310px;width:137px;z-index:12;cursor:pointer;display:none}
 .zone:hover{background:rgba(255,255,0,.12)}
-.opt{position:absolute;top:0;width:121px;height:100%;margin-left:8px;box-sizing:border-box;padding:0 8px;overflow:hidden;white-space:nowrap;background:rgba(255,255,255,.2);border:3px solid rgba(255,255,255,.75);border-radius:16px;box-shadow:0 4px 0 rgba(0,50,0,.25);display:flex;align-items:center;justify-content:center;z-index:13;cursor:pointer;pointer-events:auto;font-size:80px;font-weight:900;color:#fff;-webkit-text-stroke:3px rgba(15,60,15,.6);text-shadow:0 4px 0 rgba(0,50,0,.5),0 0 14px rgba(0,0,0,.35);opacity:0;transform:scale(.6);transform-origin:50% 100%;transition:opacity .3s,transform .35s cubic-bezier(.3,1.6,.5,1)}
+.opt{position:absolute;top:0;width:131px;height:100%;margin-left:3px;box-sizing:border-box;padding:0 3px;overflow:hidden;white-space:nowrap;background:rgba(12,35,70,.72);border:3px solid rgba(255,225,77,.8);border-radius:16px;box-shadow:0 4px 0 rgba(0,50,0,.25);display:flex;align-items:center;justify-content:center;z-index:13;cursor:pointer;pointer-events:auto;font-size:80px;font-weight:900;color:#FFE14D;letter-spacing:-1px;-webkit-text-stroke:7px #0b1f4a;paint-order:stroke fill;text-shadow:0 4px 6px rgba(0,0,0,.55);opacity:0;transform:scale(.6);transform-origin:50% 100%;transition:opacity .3s,transform .35s cubic-bezier(.3,1.6,.5,1)}
 .opt.show{opacity:1;transform:scale(1)}
 #optPlane{position:absolute;left:371px;top:436px;width:548px;height:108px;perspective:520px;perspective-origin:50% -60%;z-index:13;pointer-events:none}
 #optInner{position:absolute;inset:0;transform:rotateX(42deg);transform-origin:50% 100%;transform-style:preserve-3d}
 .opt .n{position:absolute;top:4px;left:6px;font-size:22px;color:rgba(255,255,255,.7);-webkit-text-stroke:0;text-shadow:none}
-.opt.ok{color:#ffeb3b;-webkit-text-stroke:2px rgba(120,80,0,.7)}.opt.no{color:#ff8a80;opacity:.75}
+.opt.ok{color:#7CFF6B;border-color:#7CFF6B}.opt.no{color:#ff8a80;opacity:.75}
 
 /* timer */
 #timer{left:1040px;top:470px;width:200px;z-index:16;display:none;text-align:center}
@@ -172,7 +172,7 @@ function prepQ(q){// shuffle options too
 for(let i=0;i<4;i++){const z=document.createElement('div');z.className='zone';z.style.left=(GOAL.x0+ZW*i)+'px';z.onclick=()=>choose(i);$('zones').appendChild(z);
  const o=document.createElement('div');o.className='opt';o.style.left=(ZW*i)+'px';o.innerHTML=`<span class="n">${i+1}</span><span class="t"></span>`;o.onclick=()=>choose(i);$('optInner').appendChild(o)}
 const _mc=document.createElement('canvas').getContext('2d');
-function fitText(el,t){const maxW=121-6-16-8;let f=80;const fam=getComputedStyle(el).fontFamily;do{_mc.font=`900 ${f}px ${fam}`;if(_mc.measureText(t).width+6<=maxW)break;f-=2}while(f>16);el.style.fontSize=f+'px'}
+function fitText(el,t){const maxW=131-6-6-4;let f=80;const fam=getComputedStyle(el).fontFamily;do{_mc.font=`900 ${f}px ${fam}`;_mc.letterSpacing='-1px';if(_mc.measureText(t).width+6<=maxW)break;f-=2}while(f>16);el.style.fontSize=f+'px'}
 const opts=()=>[...document.querySelectorAll('.opt')],zones=()=>[...document.querySelectorAll('.zone')];
 function showOpts(on){opts().forEach((o,i)=>{o.classList.remove('ok','no');if(on){o.querySelector('.t').textContent=cur.opts[i];fitText(o.querySelector('.t'),cur.opts[i]);setTimeout(()=>o.classList.add('show'),i*90)}else o.classList.remove('show')});zones().forEach(z=>z.style.display=on?'block':'none')}
 function banner(t,c){const b=$('banner');b.textContent=t;b.style.color=c;b.classList.remove('show');void b.offsetWidth;b.classList.add('show')}
