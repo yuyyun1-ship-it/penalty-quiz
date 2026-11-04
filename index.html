@@ -135,8 +135,8 @@ function laugh(){const a=ac(),t=a.currentTime;for(let i=0;i<6;i++){const st=t+i*
 function slipSnd(){const a=ac(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.setValueAtTime(300,t);o.frequency.exponentialRampToValueAtTime(1500,t+.25);o.frequency.exponentialRampToValueAtTime(100,t+.6);g.gain.setValueAtTime(.3,t);g.gain.exponentialRampToValueAtTime(.001,t+.65);o.connect(g).connect(a.destination);o.start(t);o.stop(t+.7)}
 function tick(){const a=ac(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();o.frequency.value=1000;g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+.06);o.connect(g).connect(a.destination);o.start(t);o.stop(t+.07)}
 // TTS
-function say(text,lang='ko-KR',rate=.9){if(!('speechSynthesis' in window))return;const u=new SpeechSynthesisUtterance(text);u.lang=lang;u.rate=rate;u.pitch=1.15;const v=speechSynthesis.getVoices().find(v=>v.lang.replace('_','-').startsWith(lang.slice(0,2)));if(v)u.voice=v;speechSynthesis.speak(u);return u}
-function speakQ(){if(!cur)return null;try{speechSynthesis.cancel()}catch(e){}let u=say(cur.say);if(cur.en)cur.opts.forEach(o=>{u=say(o,'en-US',.8)||u});return u||null}
+function say(text,lang='ko-KR',rate=.9){if(!('speechSynthesis' in window))return;const u=new SpeechSynthesisUtterance(text);u.lang=lang;u.rate=rate;u.pitch=1.15;const v=speechSynthesis.getVoices().find(v=>v.lang.replace('_','-').startsWith(lang.slice(0,2)));if(v)u.voice=v;u.volume=1;speechSynthesis.speak(u);return u}
+function speakQ(){if(!cur)return null;try{if(speechSynthesis.speaking||speechSynthesis.pending)speechSynthesis.cancel();speechSynthesis.resume()}catch(e){}let u=say(cur.say);if(cur.en)cur.opts.forEach(o=>{u=say(o,'en-US',.8)||u});return u||null}
 // 문제 읽기가 끝난 뒤 콜백. TTS 없음/실패/onend 미발생 시 예상 읽기 시간으로 대체
 let readTok=0;
 function readThen(cb){const tok=++readTok;let done=false;const fin=()=>{if(done||tok!==readTok)return;done=true;cb()};
@@ -186,7 +186,7 @@ const opts=()=>[...document.querySelectorAll('.opt')],zones=()=>[...document.que
 function showOpts(on){opts().forEach((o,i)=>{o.classList.remove('ok','no');if(on){o.querySelector('.t').textContent=cur.opts[i];fitText(o.querySelector('.t'),cur.opts[i]);setTimeout(()=>o.classList.add('show'),i*90)}else o.classList.remove('show')});zones().forEach(z=>z.style.display=on?'block':'none')}
 function banner(t,c){const b=$('banner');b.textContent=t;b.style.color=c;b.classList.remove('show');void b.offsetWidth;b.classList.add('show')}
 
-async function startGame(){ac();G.shot=0;G.me=[];G.op=[];deck=pickRound(G.cat);buildBoard();$('start').classList.add('hide');$('end').classList.add('hide');nextShot()}
+async function startGame(){ac();try{if('speechSynthesis' in window){speechSynthesis.cancel();const w=new SpeechSynthesisUtterance(' ');w.volume=0;speechSynthesis.speak(w);speechSynthesis.getVoices()}}catch(e){}G.shot=0;G.me=[];G.op=[];deck=pickRound(G.cat);buildBoard();$('start').classList.add('hide');$('end').classList.add('hide');nextShot()}
 async function nextShot(){
  if(G.shot>=5)return endGame();
  resetScene();answered=false;G.phase='ready';[...$('me').children].forEach((d,i)=>d.classList.toggle('cur',i===G.shot));
